@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Flag Royale Stream</string>
+    <string name="title_activity_main">Flag Royale Stream</string>
+    <string name="package_name">com.flagroyale.stream</string>
+    <string name="custom_url_scheme">com.flagroyale.stream</string>
+</resources>

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>FLAG ROYALE - YouTube Live Stream</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0b1120" />
+    <!-- Modern Gaming Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app" class="stream-container">
+      <!-- TOP STREAM HEADER / LIVE HUD -->
+      <header class="stream-header">
+        <div class="header-left">
+          <button id="btnSwitchGame" class="ctrl-btn btn-hub-header" title="Switch Stream Game">
+            <span class="btn-icon">🎮</span> <span class="btn-text">Games</span>
+          </button>
+          <div class="live-badge">
+            <span class="live-pulse"></span>
+            <span class="live-text">YOUTUBE LIVE</span>
+          </div>
+        </div>
+        <div class="stream-title">
+          <span class="title-glow">FLAG BATTLE ROYALE</span>
+          <span id="currentModeLabel" class="mode-tag">MODE: ROTATING CIRCLE</span>
+        </div>
+        <div class="stream-stats">
+          <div class="stat-box">
+            <span class="stat-label">ALIVE</span>
+            <span id="aliveCount" class="stat-value highlight-cyan">--</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">OUT</span>
+            <span id="outCount" class="stat-value highlight-rose">0</span>
+          </div>
+          <div class="stat-box stat-box-time">
+            <span class="stat-label">TIME</span>
+            <span id="gameTimer" class="stat-value">00:00</span>
+          </div>
+          <button id="btnToggleSidebar" class="ctrl-btn btn-feed-toggle" title="Toggle Elimination Feed">
+            <span class="btn-icon">📜</span> <span class="feed-btn-text">Feed</span> <span id="feedCountBadge" class="feed-badge-pill">0</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- MAIN ARENA CANVAS -->
+      <main class="arena-wrapper">
+        <canvas id="arenaCanvas"></canvas>
+
+        <!-- TOP-RIGHT CORNER START BUTTON (STREAMER READY HUD - NO POPUP) -->
+        <button id="btnStartRound" class="arena-corner-start-btn" title="Start Match Round">
+          <span class="btn-start-pulse"></span>
+          <span class="btn-icon">🚀</span>
+          <span class="btn-text">START MATCH</span>
+        </button>
+
+        <!-- SUSPENSE NOTIFICATION (SLOW-MO / TOP 5) -->
+        <div id="suspenseBanner" class="suspense-banner hidden">
+          <span class="suspense-icon">⚡</span>
+          <span class="suspense-text">TOP 5 FINALISTS! SUDDEN DEATH</span>
+        </div>
+      </main>
+
+      <!-- RIGHT SIDE: LIVE ELIMINATION FEED -->
+      <aside class="elimination-sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">ELIMINATION FEED</span>
+          <span id="speedIndicator" class="speed-badge">1.0X</span>
+        </div>
+        <div id="eliminationList" class="elimination-list">
+          <div class="feed-empty">Waiting for first drop...</div>
+        </div>
+      </aside>
+
+      <!-- STREAMER QUICK CONTROLS BAR (Collapsible for Clean Stream Broadcast) -->
+      <footer id="streamerBar" class="streamer-controls">
+        <div class="controls-left">
+          <button id="btnPlayPause" class="ctrl-btn btn-primary" title="Play/Pause">
+            <span class="btn-icon">⏸</span> <span class="btn-text">Pause</span>
+          </button>
+          <button id="btnRestart" class="ctrl-btn btn-warning" title="Restart Game">
+            <span class="btn-icon">🔄</span> <span class="btn-text">Restart</span>
+          </button>
+
+          <!-- Speed Multiplier for live stream pacing -->
+          <div class="btn-group">
+            <button class="speed-btn active" data-speed="1.0">1x</button>
+            <button class="speed-btn" data-speed="1.5">1.5x</button>
+            <button class="speed-btn" data-speed="2.0">2x</button>
+            <button class="speed-btn" data-speed="3.0">3x</button>
+          </div>
+        </div>
+
+        <div class="controls-center">
+          <!-- Game Mode Selector -->
+          <select id="modeSelect" class="styled-select">
+            <option value="classic">Mode 1: Rotating Circle (1 Hole)</option>
+            <option value="dual">Mode 2: Dual Counter-Rings</option>
+            <option value="shrinking">Mode 3: Shrinking Storm Ring</option>
+            <option value="hexagon">Mode 4: Spinning Hexagon</option>
+          </select>
+
+          <!-- Contender Pool Selector -->
+          <select id="poolSelect" class="styled-select">
+            <option value="top50">Pool: Top 50 Famous Countries</option>
+            <option value="all">Pool: All World Countries (100+)</option>
+            <option value="americas">Pool: Americas</option>
+            <option value="europe">Pool: Europe</option>
+            <option value="asia">Pool: Asia</option>
+            <option value="africa">Pool: Africa</option>
+            <option value="custom">Pool: Custom Viewer Names</option>
+          </select>
+        </div>
+
+        <div class="controls-right">
+          <button id="btnSound" class="ctrl-btn btn-ghost" title="Mute/Unmute Audio">
+            <span class="btn-icon" id="soundIcon">🔊</span>
+          </button>
+          <button id="btnFullscreen" class="ctrl-btn btn-ghost" title="Toggle Fullscreen Landscape">
+            <span class="btn-icon">⛶</span> Fullscreen
+          </button>
+          <button id="btnStreamerMode" class="ctrl-btn btn-glow" title="Hide UI for YouTube Stream">
+            <span class="btn-icon">👁</span> Clean Stream
+          </button>
+        </div>
+      </footer>
+
+      <!-- FLOATING RESTORE BUTTON WHEN IN CLEAN STREAM MODE -->
+      <button id="btnShowControls" class="floating-show-btn hidden" title="Show streamer controls">
+        ⚙ Settings
+      </button>
+
+      <!-- CUSTOM VIEWER NAMES MODAL -->
+      <div id="customModal" class="modal-overlay hidden">
+        <div class="modal-card">
+          <h3 class="modal-title">Enter Custom Contender Names</h3>
+          <p class="modal-subtitle">Paste viewer names or subscribers from YouTube chat (separated by comma or newlines):</p>
+          <textarea id="customNamesInput" class="modal-textarea" rows="6" placeholder="Prakash, StreamFan99, CoolGamer, Winner2026, ..."></textarea>
+          <div class="modal-actions">
+            <button id="btnCloseModal" class="ctrl-btn btn-ghost">Cancel</button>
+            <button id="btnSaveCustom" class="ctrl-btn btn-primary">Start Custom Royale</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WINNER CEREMONY MODAL OVERLAY -->
+      <div id="winnerModal" class="winner-overlay hidden">
+        <div class="winner-card">
+          <div class="winner-trophy">🏆</div>
+          <div class="winner-subtitle">SURVIVOR & CHAMPION</div>
+          <div class="winner-flag-wrapper">
+            <img id="winnerFlagImg" src="" alt="Winner Flag" class="winner-flag" />
+          </div>
+          <h1 id="winnerName" class="winner-name">United States</h1>
+          <p id="winnerStats" class="winner-details">Surviving against 50 countries!</p>
+          <div class="winner-actions">
+            <button id="btnPlayAgain" class="ctrl-btn btn-primary btn-large">
+              <span>Next Match 🚀</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GAME SELECTION HUB MODAL (MULTI-GAME HUB) -->
+      <div id="gameHubModal" class="game-hub-overlay">
+        <div class="game-hub-container">
+          <header class="game-hub-header">
+            <div class="game-hub-badge">
+              <span class="hub-pulse"></span>
+              <span>STREAM ARCADE • SELECT GAME</span>
+            </div>
+            <h1 class="game-hub-title">CHOOSE STREAM GAME</h1>
+            <p class="game-hub-subtitle">Choose an interactive physics game for YouTube Live, TikTok, or Mobile:</p>
+          </header>
+
+          <div class="game-cards-grid">
+            <!-- GAME 1: FLAG BATTLE ROYALE (ACTIVE) -->
+            <div class="game-card active-game" id="cardFlagRoyale" data-game="flag-royale">
+              <div class="card-status-badge status-ready">🟢 READY TO PLAY</div>
+              <div class="game-card-icon">🌐 💥</div>
+              <h2 class="game-card-title">Flag Battle Royale</h2>
+              <p class="game-card-desc">Balls drop from the top inside rotating rings. Last country to survive the escape hole wins!</p>
+              <div class="game-card-tags">
+                <span class="game-tag">4 Ring Modes</span>
+                <span class="game-tag">120+ Countries</span>
+                <span class="game-tag">Sudden Death</span>
+              </div>
+              <button class="ctrl-btn btn-primary btn-select-game" id="btnLaunchFlagRoyale">
+                <span>Play Flag Royale 🚀</span>
+              </button>
+            </div>
+
+            <!-- GAME 2: PLINKO FLAG CASCADE (UPCOMING) -->
+            <div class="game-card upcoming-game" data-game="plinko">
+              <div class="card-status-badge status-upcoming">⚡ COMING SOON</div>
+              <div class="game-card-icon">🎰 📍</div>
+              <h2 class="game-card-title">Plinko Flag Drop</h2>
+              <p class="game-card-desc">Chaotic pegboard course where countries bounce through pegs into multiplier and danger slots.</p>
+              <div class="game-card-tags">
+                <span class="game-tag">Pegboard Maze</span>
+                <span class="game-tag">Multipliers</span>
+                <span class="game-tag">Chat Bets</span>
+              </div>
+              <button class="ctrl-btn btn-ghost btn-select-game btn-preview-trigger" data-preview="plinko">
+                <span>Preview Mode ⭐</span>
+              </button>
+            </div>
+
+            <!-- GAME 3: MARBLE TRACK RACE (UPCOMING) -->
+            <div class="game-card upcoming-game" data-game="marble-race">
+              <div class="card-status-badge status-upcoming">⚡ COMING SOON</div>
+              <div class="game-card-icon">🏁 🏎️</div>
+              <h2 class="game-card-title">Flag Marble Race</h2>
+              <p class="game-card-desc">Downhill obstacle race track with rotating hammers, speed boosts, loop-de-loops, and ramps.</p>
+              <div class="game-card-tags">
+                <span class="game-tag">Downhill Track</span>
+                <span class="game-tag">Speed Boosts</span>
+                <span class="game-tag">Photo Finish</span>
+              </div>
+              <button class="ctrl-btn btn-ghost btn-select-game btn-preview-trigger" data-preview="marble-race">
+                <span>Preview Mode ⭐</span>
+              </button>
+            </div>
+
+            <!-- GAME 4: SUMO BUMPER RING (UPCOMING) -->
+            <div class="game-card upcoming-game" data-game="sumo-ring">
+              <div class="card-status-badge status-upcoming">⚡ COMING SOON</div>
+              <div class="game-card-icon">🥊 ⚡</div>
+              <h2 class="game-card-title">Flag Sumo Ring</h2>
+              <p class="game-card-desc">Bumper physics knock-out ring where contestants smash and bump rivals over the edge.</p>
+              <div class="game-card-tags">
+                <span class="game-tag">High-Impact Physics</span>
+                <span class="game-tag">Shrinking Ring</span>
+                <span class="game-tag">Overdrive Mode</span>
+              </div>
+              <button class="ctrl-btn btn-ghost btn-select-game btn-preview-trigger" data-preview="sumo-ring">
+                <span>Preview Mode ⭐</span>
+              </button>
+            </div>
+          </div>
+
+          <footer class="game-hub-footer">
+            <label class="remember-label" title="Always show game picker on application startup">
+              <input type="checkbox" id="chkShowHubOnStartup" checked />
+              <span>Ask which game to play every time app opens</span>
+            </label>
+            <div class="hub-actions">
+              <button id="btnCloseHub" class="ctrl-btn btn-ghost">Close</button>
+              <button id="btnQuickStart" class="ctrl-btn btn-glow">Enter Arena ⚡</button>
+            </div>
+          </footer>
+        </div>
+      </div>
+
+      <!-- UPCOMING GAME PREVIEW / ROADMAP MODAL -->
+      <div id="previewModal" class="modal-overlay hidden">
+        <div class="modal-card">
+          <div class="preview-badge" id="previewBadge">FEATURE ROADMAP</div>
+          <h3 class="modal-title" id="previewTitle">Upcoming Game</h3>
+          <p class="modal-subtitle" id="previewDesc">Description</p>
+          <div class="preview-features-box" id="previewFeatures"></div>
+          <div class="modal-actions">
+            <button id="btnClosePreview" class="ctrl-btn btn-ghost">Close</button>
+            <button id="btnVoteFeature" class="ctrl-btn btn-primary">Vote for this Game 👍</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

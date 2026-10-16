@@ -1,0 +1,17 @@
+{
+  "name": "Flag Battle Royale - Live Stream",
+  "short_name": "FlagRoyale",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05070f",
+  "theme_color": "#0b1120",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
